@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>マギレココンパス</title>
+    <meta name="theme-color" content="#121212">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0d0d0d;
+            color: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            max-height: 100vh;
+            background-color: #141414;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 481px) {
+            .app-container {
+                border-radius: 16px;
+                height: 94vh;
+                max-height: 860px;
+            }
+        }
+
+        /* スマホを横画面（ランドスケープ）にしたときの最適化 */
+        @media (orientation: landscape) {
+            .app-container {
+                max-width: 100% !important;
+                height: 100% !important;
+                max-height: 100vh !important;
+                border-radius: 0 !important;
+            }
+            .app-main {
+                padding: 10px 16px !important;
+            }
+            #tab-memo.active {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            #tab-memo.active h2 {
+                width: 100%;
+                margin-bottom: 2px;
+            }
+            #tab-memo.active .form-group {
+                flex: 1 1 48%;
+                margin-bottom: 6px !important;
+                padding: 8px !important;
+            }
+            #tab-memo.active .calc-card {
+                flex: 1 1 48%;
+                margin-bottom: 6px !important;
+            }
+            #tab-memo.active #btn-save-memo {
+                width: 100%;
+            }
+        }
+
+        @keyframes input-flash {
+            0% { background-color: rgba(255, 105, 180, 0.4); }
+            100% { background-color: transparent; }
+        }
+        .flash-active {
+            animation: input-flash 0.25s ease-out;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #8b008b, #ff69b4);
+            color: #fff;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .app-header h1 {
+            font-size: 1.05rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .version-badge {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+
+        .app-main {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 12px;
+            padding-bottom: 20px;
+        }
+
+        .app-nav {
+            flex: 0 0 52px;
+            width: 100%;
+            background: #111;
+            display: flex;
+            border-top: 1px solid #222;
+            z-index: 10;
+            overflow-x: auto;
+        }
+        .nav-item {
+            flex: 1;
+            min-width: 60px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.6rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: color 0.2s;
+            white-space: nowrap;
+            padding: 0 2px;
+        }
+        .nav-item.active {
+            color: #ff69b4;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-content h2 {
+            font-size: 1.05rem;
+            color: #ff69b4;
+            margin-bottom: 12px;
+            border-left: 4px solid #ff69b4;
+            padding-left: 8px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #ff69b4;
+            outline: none;
+        }
+        .form-group input[readonly] {
+            background: #161616;
+            color: #ff69b4;
+            font-weight: bold;
+            border-color: #333;
+        }
+
+        .counter-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0a0a0a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .counter-btn {
+            background: #2a2a2a;
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 38px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .counter-btn:active {
+            background: #ff69b4;
+        }
+        .counter-value {
+            flex: 1;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: transparent;
+            border: none;
+        }
+        .counter-value::-webkit-inner-spin-button,
+        .counter-value::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .quick-btn-container {
+            display: flex;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        .quick-btn {
+            flex: 1;
+            background: #2a2a2a;
+            color: #ff69b4;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 5px 0;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .quick-btn:active {
+            background: #ff69b4;
+            color: #fff;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #8b008b, #ff69b4);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn-primary:active { opacity: 0.8; }
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn-danger {
+            width: 100%;
+            padding: 10px;
+            background: #8b0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .calc-card, .result-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .calc-card h3, .result-card h3 {
+            font-size: 0.85rem;
+            color: #ff69b4;
+            margin-bottom: 8px;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+        .spec-table th, .spec-table td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: center;
+        }
+        .spec-table th {
+            background: #222;
+            color: #ffb6c1;
+        }
+        .highlight-spec {
+            background-color: rgba(255, 105, 180, 0.3) !important;
+            border: 1px solid #ff69b4 !important;
+            font-weight: bold;
+        }
+        .inference-bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+        .inference-label {
+            width: 45px;
+            font-weight: bold;
+            color: #ff69b4;
+        }
+        .inference-bar-bg {
+            flex: 1;
+            background: #0a0a0a;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+            margin: 0 6px;
+            border: 1px solid #333;
+        }
+        .inference-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b008b, #ff69b4);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .inference-pct {
+            width: 42px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .inference-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: #121212;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+        }
+        .inference-filter-container label {
+            font-size: 0.78rem;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 2px 4px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border: 1px solid #2a2a2a;
+        }
+        .inference-filter-container input[type="checkbox"] {
+            accent-color: #ff69b4;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="app-container">
+        <header class="app-header">
+            <h1>マギレココンパス</h1>
+            <div class="header-info">
+                <span class="version-badge">Ver.1.8.0</span>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <!-- 実戦メモタブ -->
+            <section id="tab-memo" class="tab-content active">
+                <h2>実戦メモ ＆ 基本カウンター</h2>
+                
+                <div class="form-group" id="group-start-games">
+                    <label for="input-start-games">打ち始めゲーム数（手入力）</label>
+                    <input type="number" id="input-start-games" value="0" placeholder="例: 0">
+                </div>
+
+                <div class="form-group" id="group-current-games">
+                    <label for="input-current-games">現在のゲーム数</label>
+                    <input type="number" id="input-current-games" placeholder="例: 3000">
+                    <div class="quick-btn-container">
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(-100)">-100</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(-50)">-50</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(50)">+50</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(100)">+100</button>
+                    </div>
+                </div>
+
+                <div class="form-group" id="group-games">
+                    <label for="input-games">自分で打ったゲーム数（自動計算）</label>
+                    <input type="number" id="input-games" value="0" readonly>
+                </div>
+
+                <div class="form-group" id="group-at">
+                    <label>AT初当たり回数</label>
+                    <div class="counter-control">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('input-at', -1)">-</button>
+                        <input type="number" id="input-at" class="counter-value" value="0" min="0">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('input-at', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group" id="group-screen-history">
+                    <label>ボーナス終了画面 履歴登録（示唆系）</label>
+                    <div style="margin-bottom: 8px;">
+                        <label for="input-screen-type" style="font-size:0.75rem; color:#aaa; margin-bottom:2px;">終了画面を選択</label>
+                        <select id="input-screen-type">
+                            <option value="デフォルト">デフォルト</option>
+                            <option value="高設定示唆 弱">高設定示唆 (弱)</option>
+                            <option value="高設定示唆 強">高設定示唆 (強)</option>
+                            <option value="設定2以上濃厚">設定2以上濃厚</option>
+                            <option value="設定4以上濃厚">設定4以上濃厚</option>
+                            <option value="設定6濃厚">設定6濃厚！</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-add-screen-history" class="btn-primary" style="margin-top: 4px;">追加</button>
+                </div>
+
+                <div class="calc-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="margin-bottom: 0;">終了画面 履歴一覧</h3>
+                        <button type="button" id="btn-clear-screen-history" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 0.75rem; margin-top:0;">全削除</button>
+                    </div>
+                    <div id="screen-history-list" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
+                        <p style="color: #777; text-align: center; padding: 8px;">履歴はありません</p>
+                    </div>
+                </div>
+
+                <button id="btn-save-memo" class="btn-primary">データを保存</button>
+            </section>
+
+            <!-- カウント要素タブ（弱チェリー・スイカCZ等） -->
+            <section id="tab-roles" class="tab-content">
+                <h2>小役・モード・ボーナス集計</h2>
+
+                <div class="form-group">
+                    <label for="input-current-games-roles">現在のゲーム数（メモタブ連動）</label>
+                    <input type="number" id="input-current-games-roles" placeholder="例: 3000">
+                    <div class="quick-btn-container">
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(-100)">-100</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(-50)">-50</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(50)">+50</button>
+                        <button type="button" class="quick-btn" onclick="addCurrentGames(100)">+100</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>弱チェリーカウント（実戦ゲーム数連動）</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85rem; color: #aaa;">
+                        <span>対象G数: <strong id="weak-cherry-games-display" style="color:#ff69b4;">0G</strong></span>
+                        <span>出現率: <strong id="weak-cherry-rate-display" style="color:#00ffff;">---</strong></span>
+                    </div>
+                    <div class="counter-control">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('weak-cherry', -1)">-</button>
+                        <input type="number" id="weak-cherry" class="counter-value" value="0" min="0">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('weak-cherry', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>スイカからのCZ突入 / 試行回数</label>
+                    <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.8rem; color: #00ffff;" id="suika-cz-rate-display">0.0% (0 / 0)</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <div class="counter-control" style="flex:1;">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('suika-cz-hit', -1)">-</button>
+                            <input type="number" id="suika-cz-hit" class="counter-value" value="0" min="0" placeholder="当">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('suika-cz-hit', 1)">+</button>
+                        </div>
+                        <span style="color:#aaa;">/</span>
+                        <div class="counter-control" style="flex:1;">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('suika-cz-tot', -1)">-</button>
+                            <input type="number" id="suika-cz-tot" class="counter-value" value="0" min="0" placeholder="総">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('suika-cz-tot', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>エピソードボーナス（黒江チャレンジ以外経由）選択キャラ[span_0](start_span)[span_0](end_span)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <div>
+                            <span style="font-size:0.75rem; color:#aaa;">やちよEP</span>
+                            <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-yachiyo', -1)">-</button><input type="number" id="ep-yachiyo" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-yachiyo', 1)">+</button></div>
+                        </div>
+                        <div>
+                            <span style="font-size:0.75rem; color:#aaa;">鶴乃EP</span>
+                            <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-tsuruno', -1)">-</button><input type="number" id="ep-tsuruno" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-tsuruno', 1)">+</button></div>
+                        </div>
+                        <div>
+                            <span style="font-size:0.75rem; color:#aaa;">さなEP</span>
+                            <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-sana', -1)">-</button><input type="number" id="ep-sana" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-sana', 1)">+</button></div>
+                        </div>
+                        <div>
+                            <span style="font-size:0.75rem; color:#aaa;">フェリシアEP</span>
+                            <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-felicia', -1)">-</button><input type="number" id="ep-felicia" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-felicia', 1)">+</button></div>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <span style="font-size:0.75rem; color:#aaa;">黒江EP（高設定期待大！）[span_1](start_span)[span_1](end_span)</span>
+                            <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-kuroe', -1)">-</button><input type="number" id="ep-kuroe" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-kuroe', 1)">+</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>みたまボーナス ウワサ発展時 AT当選 / 試行[span_2](start_span)[span_2](end_span)</label>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <div class="counter-control" style="flex:1;">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('mitama-hit', -1)">-</button>
+                            <input type="number" id="mitama-hit" class="counter-value" value="0" min="0" placeholder="当">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('mitama-hit', 1)">+</button>
+                        </div>
+                        <span style="color:#aaa;">/</span>
+                        <div class="counter-control" style="flex:1;">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('mitama-tot', -1)">-</button>
+                            <input type="number" id="mitama-tot" class="counter-value" value="0" min="0" placeholder="総">
+                            <button type="button" class="counter-btn" onclick="adjustCounter('mitama-tot', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 実戦結果タブ -->
+            <section id="tab-results" class="tab-content">
+                <h2>実戦結果 ＆ 分布集計</h2>
+                
+                <div class="calc-card">
+                    <h3>現在の実戦確率（自動計算）</h3>
+                    <div class="stat-row">
+                        <span>AT初当たり確率:</span>
+                        <strong id="calc-at-result">---</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>弱チェリー確率:</span>
+                        <strong id="calc-res-cherry">---</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>スイカからのCZ突入率:</span>
+                        <strong id="calc-res-suikacz">0.0% (0 / 0)</strong>
+                    </div>
+                </div>
+
+                <div class="calc-card">
+                    <h3>独自カウンター集計</h3>
+                    <div class="stat-row">
+                        <span>みたまボーナスAT当選率:</span>
+                        <strong id="calc-res-mitama">0.0% (0 / 0)</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 解析データタブ -->
+            <section id="tab-analysis" class="tab-content">
+                <h2>解析データ（一撃参考）</h2>
+                
+                <div class="result-card">
+                    <h3>弱チェリー確率</h3>
+                    <table class="spec-table analysis-table" data-table-id="weak-cherry-table">
+                        <thead><tr><th>設定</th><th>確率</th></tr></thead>
+                        <tbody>
+                            <tr><td>設定1</td><td data-col="wc" data-val="0.016666">1/60.0</td></tr>
+                            <tr><td>設定2</td><td data-col="wc" data-val="0.017331">1/57.7</td></tr>
+                            <tr><td>設定3</td><td data-col="wc" data-val="0.018018">1/55.5</td></tr>
+                            <tr><td>設定4</td><td data-col="wc" data-val="0.018691">1/53.5</td></tr>
+                            <tr><td>設定5</td><td data-col="wc" data-val="0.019342">1/51.7</td></tr>
+                            <tr><td>設定6</td><td data-col="wc" data-val="0.020000">1/50.0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="result-card">
+                    <h3>スイカからのCZ当選率（さなモード以外）</h3>
+                    <table class="spec-table analysis-table" data-table-id="suika-cz-table">
+                        <thead><tr><th>設定</th><th>当選率</th></tr></thead>
+                        <tbody>
+                            <tr><td>設定1</td><td data-col="scz" data-val="0.199">19.9%</td></tr>
+                            <tr><td>設定2</td><td data-col="scz" data-val="0.223">22.3%</td></tr>
+                            <tr><td>設定3</td><td data-col="scz" data-val="0.246">24.6%</td></tr>
+                            <tr><td>設定4</td><td data-col="scz" data-val="0.273">27.3%</td></tr>
+                            <tr><td>設定5</td><td data-col="scz" data-val="0.301">30.1%</td></tr>
+                            <tr><td>設定6</td><td data-col="scz" data-val="0.328">32.8%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="result-card">
+                    <h3>エピソードボーナス選択率（黒江チャ以外）[span_3](start_span)[span_3](end_span)</h3>
+                    <table class="spec-table">
+                        <thead><tr><th>設定</th><th>やちよ</th><th>鶴乃</th><th>さな</th><th>フェリシア</th><th>黒江</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>28.1%</td><td>28.1%</td><td>21.9%</td><td>21.9%</td><td>0.1%</td></tr>
+                            <tr><td>2</td><td>32.7%</td><td>23.4%</td><td>21.9%</td><td>21.9%</td><td>0.1%</td></tr>
+                            <tr><td>3</td><td>23.4%</td><td>31.3%</td><td>21.9%</td><td>21.9%</td><td>1.6%</td></tr>
+                            <tr><td>4</td><td>28.1%</td><td>15.6%</td><td>31.3%</td><td>23.4%</td><td>1.6%</td></tr>
+                            <tr><td>5</td><td>17.2%</td><td>21.9%</td><td>23.4%</td><td>31.3%</td><td>6.3%</td></tr>
+                            <tr><td>6</td><td>23.4%</td><td>14.1%</td><td>31.3%</td><td>25.0%</td><td>6.3%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="result-card">
+                    <h3>みたまボーナス ウワサ発展時AT当選率[span_4](start_span)[span_4](end_span)</h3>
+                    <table class="spec-table">
+                        <thead><tr><th>設定</th><th>報酬Lv2</th><th>報酬Lv3</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>0.8%</td><td>5.1%</td></tr>
+                            <tr><td>2</td><td>1.2%</td><td>6.3%</td></tr>
+                            <tr><td>3</td><td>2.3%</td><td>7.8%</td></tr>
+                            <tr><td>4</td><td>4.7%</td><td>9.4%</td></tr>
+                            <tr><td>5</td><td>6.3%</td><td>10.9%</td></tr>
+                            <tr><td>6</td><td>7.8%</td><td>12.5%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="result-card">
+                    <h3>ストーリー5スタートの示唆内容（5スタート）</h3>
+                    <table class="spec-table">
+                        <thead><tr><th>パターン</th><th>示唆内容</th><th>1回目</th><th>2回目</th><th>3回目</th><th>4回目</th><th>5回目</th></tr></thead>
+                        <tbody>
+                            <tr><td>5スタート①</td><td>設定1否定</td><td>5</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+                            <tr><td>5スタート②</td><td>設定2否定</td><td>5</td><td>2</td><td>1</td><td>3</td><td>4</td></tr>
+                            <tr><td>5スタート③</td><td>設定3否定</td><td>5</td><td>3</td><td>1</td><td>2</td><td>4</td></tr>
+                            <tr><td>5スタート④</td><td>設定2否定</td><td>5</td><td>4</td><td>2</td><td>1</td><td>3</td></tr>
+                            <tr><td>5スタート⑤</td><td>設定1否定＆高設定示唆</td><td>5</td><td>4</td><td>3</td><td>1</td><td>2</td></tr>
+                            <tr><td>5スタート⑥</td><td>設定5・6確定</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="font-size: 0.75rem; color: #ff69b4; margin-top: 6px;">※5→4→3がアツい！降順に進む⑥のパターンであれば設定5or6が濃厚。</p>
+                </div>
+
+                <div class="result-card">
+                    <h3>AT初当り確率 ＆ 機械割</h3>
+                    <table class="spec-table">
+                        <thead>
+                            <tr><th>設定</th><th>AT初当り</th><th>機械割</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>設定1</td><td>1/550.0</td><td>97.8%</td></tr>
+                            <tr><td>設定2</td><td>1/520.0</td><td>98.9%</td></tr>
+                            <tr><td>設定3</td><td>1/490.0</td><td>101.5%</td></tr>
+                            <tr><td>設定4</td><td>1/440.0</td><td>105.5%</td></tr>
+                            <tr><td>設定5</td><td>1/400.0</td><td>109.5%</td></tr>
+                            <tr><td>設定6</td><td>1/350.0</td><td>114.5%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 設定推測タブ -->
+            <section id="tab-inference" class="tab-content">
+                <h2>設定推測</h2>
+                
+                <div class="result-card" id="reliability-card" style="border-color: #ff69b4;">
+                    <h3 style="color: #ff69b4; margin-bottom: 6px;">推測信頼度</h3>
+                    <div id="reliability-stars" style="font-size: 1.3rem; letter-spacing: 2px; color: #ffb6c1; margin-bottom: 4px;">★☆☆☆☆</div>
+                    <div id="reliability-games" style="font-size: 0.85rem; color: #ccc; margin-bottom: 6px;">通常ゲーム数：0G</div>
+                    <div id="reliability-message" style="font-size: 0.9rem; font-weight: bold; color: #fff;">データ不足</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>設定推測確率（分布）</h3>
+                    <div class="inference-filter-container">
+                        <label><input type="checkbox" id="chk-factor-all" checked onchange="updateInferenceDistribution()"> 総合（全要素）</label>
+                    </div>
+                    <div id="inference-distribution-container" style="margin-top: 10px;">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 設定・レポートタブ -->
+            <section id="tab-settings" class="tab-content">
+                <h2>実戦レポート ＆ データ管理</h2>
+                
+                <div class="calc-card" style="margin-bottom: 12px;">
+                    <h3>📋 実戦レポート生成</h3>
+                    <textarea id="report-text-output" readonly style="width: 100%; height: 210px; background: #0a0a0a; border: 1px solid #444; color: #fff; border-radius: 6px; font-size: 0.78rem; padding: 8px; font-family: monospace; margin-bottom: 8px; resize: none;"></textarea>
+                    <button type="button" id="btn-copy-report" class="btn-primary" style="margin-top:0;">📋 テキストをコピー</button>
+                </div>
+
+                <button id="btn-reset" class="btn-danger">全データリセット</button>
+            </section>
+        </main>
+
+        <nav class="app-nav">
+            <button class="nav-item active" data-target="tab-memo">実戦メモ</button>
+            <button class="nav-item" data-target="tab-roles">小役・モード</button>
+            <button class="nav-item" data-target="tab-results">結果</button>
+            <button class="nav-item" data-target="tab-analysis">解析</button>
+            <button class="nav-item" data-target="tab-inference">推測</button>
+            <button class="nav-item" data-target="tab-settings">設定</button>
+        </nav>
+    </div>
+
+    <script>
+        const APP_DATA = {
+            machineName: "マギアレコード",
+            specs: {
+                setting: [1, 2, 3, 4, 5, 6],
+                atProb: [550.0, 520.0, 490.0, 440.0, 400.0, 350.0]
+            }
+        };
+
+        let screenHistory = [];
+        let currentInferencePercentages = [0, 0, 0, 0, 0, 0];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            loadMemoData();
+            setupEventListeners();
+            updateCalculatedGames();
+            updateReportText();
+        });
+
+        function adjustCounter(elementId, amount) {
+            const input = document.getElementById(elementId);
+            if (!input) return;
+            let currentVal = parseInt(input.value) || 0;
+            currentVal += amount;
+            if (currentVal < 0) currentVal = 0;
+            input.value = currentVal;
+            calculateStats();
+            autoSaveMemo();
+        }
+
+        function addCurrentGames(amount) {
+            const inputCur = document.getElementById('input-current-games');
+            const inputRoles = document.getElementById('input-current-games-roles');
+            if (!inputCur) return;
+            let currentVal = parseInt(inputCur.value) || 0;
+            currentVal += amount;
+            if (currentVal < 0) currentVal = 0;
+            
+            inputCur.value = currentVal;
+            if (inputRoles) inputRoles.value = currentVal;
+            
+            updateCalculatedGames();
+        }
+
+        function updateCalculatedGames() {
+            const startGames = parseInt(document.getElementById('input-start-games').value) || 0;
+            const currentGames = parseInt(document.getElementById('input-current-games').value) || 0;
+            const selfGamesInput = document.getElementById('input-games');
+            let diff = currentGames - startGames;
+            if (diff < 0) diff = 0;
+            if (selfGamesInput) selfGamesInput.value = diff;
+
+            calculateStats();
+            autoSaveMemo();
+        }
+
+        function initTabs() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    item.classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
+                    if (targetId === 'tab-settings') updateReportText();
+                });
+            });
+        }
+
+        function loadMemoData() {
+            const savedData = localStorage.getItem('magireco_memo');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    document.getElementById('input-start-games').value = data.startGames ?? 0;
+                    const curVal = data.currentGames ?? '';
+                    document.getElementById('input-current-games').value = curVal;
+                    const rolesCur = document.getElementById('input-current-games-roles');
+                    if (rolesCur) rolesCur.value = curVal;
+
+                    document.getElementById('input-at').value = data.at ?? 0;
+                    document.getElementById('weak-cherry').value = data.weakCherry ?? 0;
+                    document.getElementById('suika-cz-hit').value = data.suikaCzHit ?? 0;
+                    document.getElementById('suika-cz-tot').value = data.suikaCzTot ?? 0;
+                    if (data.screenHistory) screenHistory = data.screenHistory;
+                    renderScreenHistory();
+                    calculateStats();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        function autoSaveMemo() {
+            const curVal = document.getElementById('input-current-games').value;
+            const data = {
+                startGames: document.getElementById('input-start-games').value,
+                currentGames: curVal,
+                at: document.getElementById('input-at').value,
+                weakCherry: document.getElementById('weak-cherry').value,
+                suikaCzHit: document.getElementById('suika-cz-hit').value,
+                suikaCzTot: document.getElementById('suika-cz-tot').value,
+                screenHistory: screenHistory
+            };
+            localStorage.setItem('magireco_memo', JSON.stringify(data));
+            updateReportText();
+        }
+
+        function renderScreenHistory() {
+            const container = document.getElementById('screen-history-list');
+            if (!container) return;
+            if (screenHistory.length === 0) {
+                container.innerHTML = '<p style="color: #777; text-align: center; padding: 8px;">履歴はありません</p>';
+                return;
+            }
+            let html = '';
+            screenHistory.forEach((item, index) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 6px 10px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #2a2a2a;">
+                        <div><span style="color: #ff69b4; font-weight: bold; margin-right: 6px;">${index + 1}回目</span><span>${item.screenType}</span></div>
+                        <button type="button" onclick="removeScreenHistory(${index})" style="background: #333; color: #ff69b4; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer;">削除</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function removeScreenHistory(index) {
+            screenHistory.splice(index, 1);
+            renderScreenHistory();
+            autoSaveMemo();
+            calculateStats();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btn-add-screen-history').addEventListener('click', () => {
+                const screenType = document.getElementById('input-screen-type').value;
+                screenHistory.push({ screenType, timestamp: Date.now() });
+                renderScreenHistory();
+                autoSaveMemo();
+                calculateStats();
+            });
+
+            document.getElementById('btn-clear-screen-history').addEventListener('click', () => {
+                if (confirm('終了画面の履歴をすべて削除しますか？')) {
+                    screenHistory = [];
+                    renderScreenHistory();
+                    autoSaveMemo();
+                    calculateStats();
+                }
+            });
+
+            document.getElementById('btn-copy-report').addEventListener('click', () => {
+                const text = generateReportText();
+                navigator.clipboard.writeText(text).then(() => alert('コピーしました！'));
+            });
+
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                if (confirm('全データをリセットしますか？')) {
+                    localStorage.removeItem('magireco_memo');
+                    location.reload();
+                }
+            });
+
+            const inputCur = document.getElementById('input-current-games');
+            const inputRoles = document.getElementById('input-current-games-roles');
+
+            inputCur.addEventListener('input', () => {
+                if (inputRoles) inputRoles.value = inputCur.value;
+                updateCalculatedGames();
+            });
+
+            if (inputRoles) {
+                inputRoles.addEventListener('input', () => {
+                    inputCur.value = inputRoles.value;
+                    updateCalculatedGames();
+                });
+            }
+
+            document.getElementById('input-start-games').addEventListener('input', updateCalculatedGames);
+            document.getElementById('weak-cherry').addEventListener('input', calculateStats);
+            document.getElementById('suika-cz-hit').addEventListener('input', calculateStats);
+            document.getElementById('suika-cz-tot').addEventListener('input', calculateStats);
+        }
+
+        function highlightRatioTable(tableId, hitInputId, totalInputId, dataCols) {
+            const table = document.querySelector(`[data-table-id="${tableId}"]`);
+            if (!table) return;
+
+            const hit = parseInt(document.getElementById(hitInputId).value) || 0;
+            const total = parseInt(document.getElementById(totalInputId).value) || 0;
+            const hasData = (total > 0 && hit > 0);
+
+            const trs = table.querySelectorAll('tbody tr');
+            trs.forEach(tr => {
+                dataCols.forEach(col => {
+                    const td = tr.querySelector(`[data-col="${col}"]`);
+                    if (td) td.classList.remove('highlight-spec');
+                });
+            });
+
+            if (!hasData) return;
+
+            const userRate = hit / total;
+            let closestTd = null;
+            let minDiff = Infinity;
+
+            trs.forEach(tr => {
+                dataCols.forEach(col => {
+                    const td = tr.querySelector(`[data-col="${col}"]`);
+                    if (!td) return;
+                    const specVal = parseFloat(td.getAttribute('data-val'));
+                    if (isNaN(specVal)) return;
+
+                    const diff = Math.abs(specVal - userRate);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestTd = td;
+                    }
+                });
+            });
+
+            if (closestTd) {
+                closestTd.classList.add('highlight-spec');
+            }
+        }
+
+        function calculateStats() {
+            const games = parseInt(document.getElementById('input-games').value) || 0;
+            const at = parseInt(document.getElementById('input-at').value) || 0;
+            let atActual = (games > 0 && at > 0) ? (games / at).toFixed(1) : 0;
+            document.getElementById('calc-at-result').textContent = atActual > 0 ? `1 / ${atActual}` : '---';
+
+            // 弱チェリー計算
+            const weakCherry = parseInt(document.getElementById('weak-cherry').value) || 0;
+            document.getElementById('weak-cherry-games-display').textContent = `${games}G`;
+            let cherryActual = (games > 0 && weakCherry > 0) ? (games / weakCherry).toFixed(1) : 0;
+            const cherryStr = cherryActual > 0 ? `1 / ${cherryActual} (${weakCherry}回)` : '---';
+            document.getElementById('weak-cherry-rate-display').textContent = cherryStr;
+            document.getElementById('calc-res-cherry').textContent = cherryStr;
+
+            // スイカCZ計算
+            const suikaHit = parseInt(document.getElementById('suika-cz-hit').value) || 0;
+            const suikaTot = parseInt(document.getElementById('suika-cz-tot').value) || 0;
+            const suikaRate = suikaTot > 0 ? ((suikaHit / suikaTot) * 100).toFixed(1) : '0.0';
+            const suikaStr = `${suikaRate}% (${suikaHit} / ${suikaTot})`;
+            document.getElementById('suika-cz-rate-display').textContent = suikaStr;
+            document.getElementById('calc-res-suikacz').textContent = suikaStr;
+
+            const mitamaHit = parseInt(document.getElementById('mitama-hit').value) || 0;
+            const mitamaTot = parseInt(document.getElementById('mitama-tot').value) || 0;
+            const mitamaRate = mitamaTot > 0 ? ((mitamaHit / mitamaTot) * 100).toFixed(1) : '0.0';
+            document.getElementById('calc-res-mitama').textContent = `${mitamaRate}% (${mitamaHit} / ${mitamaTot})`;
+
+            // ハイライト更新
+            highlightRatioTable('weak-cherry-table', 'weak-cherry', 'input-games', ['wc']);
+            highlightRatioTable('suika-cz-table', 'suika-cz-hit', 'suika-cz-tot', ['scz']);
+
+            updateReliability(games);
+            updateInferenceDistribution();
+        }
+
+        function updateReliability(games) {
+            const starsEl = document.getElementById('reliability-stars');
+            const gamesEl = document.getElementById('reliability-games');
+            const msgEl = document.getElementById('reliability-message');
+            if (!starsEl) return;
+            gamesEl.textContent = `通常ゲーム数：${games}G`;
+            let stars = games < 1000 ? "★☆☆☆☆" : games < 3000 ? "★★☆☆☆" : "★★★☆☆";
+            starsEl.textContent = stars;
+            msgEl.textContent = games < 1000 ? "データ不足" : "参考程度";
+        }
+
+        function updateInferenceDistribution() {
+            const container = document.getElementById('inference-distribution-container');
+            if (!container) return;
+            const games = parseInt(document.getElementById('input-games').value) || 0;
+            const at = parseInt(document.getElementById('input-at').value) || 0;
+            const specs = APP_DATA.specs;
+
+            let l = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+            if (games > 100 && at > 0) {
+                const userAtProb = games / at;
+                for (let i = 0; i < 6; i++) {
+                    const diff = Math.abs(specs.atProb[i] - userAtProb) / specs.atProb[i];
+                    l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+                }
+            }
+            const total = l.reduce((a, b) => a + b, 0);
+            currentInferencePercentages = l.map(val => total > 0 ? Math.round((val / total) * 100) : 0);
+
+            let html = '';
+            for (let i = 0; i < 6; i++) {
+                const pct = currentInferencePercentages[i];
+                html += `
+                    <div class="inference-bar-row">
+                        <div class="inference-label">設定${specs.setting[i]}</div>
+                        <div class="inference-bar-bg"><div class="inference-bar-fill" style="width: ${pct}%;"></div></div>
+                        <div class="inference-pct">${pct}%</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function generateReportText() {
+            const games = document.getElementById('input-games').value || '0';
+            const at = document.getElementById('input-at').value || '0';
+            const atProb = document.getElementById('calc-at-result').textContent;
+            const cherryStr = document.getElementById('calc-res-cherry').textContent;
+            const suikaCzStr = document.getElementById('calc-res-suikacz').textContent;
+            const p = currentInferencePercentages;
+            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nAT初当り：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
+        }
+
+        function updateReportText() {
+            const textarea = document.getElementById('report-text-output');
+            if (textarea) textarea.value = generateReportText();
+        }
+    </script>
+</body>
+</html>
