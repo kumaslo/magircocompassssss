@@ -44,7 +44,6 @@
             }
         }
 
-        /* スマホを横画面（ランドスケープ）にしたときの最適化 */
         @media (orientation: landscape) {
             .app-container {
                 max-width: 100% !important;
@@ -76,14 +75,6 @@
             #tab-memo.active #btn-save-memo {
                 width: 100%;
             }
-        }
-
-        @keyframes input-flash {
-            0% { background-color: rgba(255, 105, 180, 0.4); }
-            100% { background-color: transparent; }
-        }
-        .flash-active {
-            animation: input-flash 0.25s ease-out;
         }
 
         .app-header {
@@ -272,17 +263,6 @@
             margin-top: 8px;
         }
         .btn-primary:active { opacity: 0.8; }
-        .btn-secondary {
-            width: 100%;
-            padding: 10px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
         .btn-danger {
             width: 100%;
             padding: 10px;
@@ -397,7 +377,7 @@
         <header class="app-header">
             <h1>マギレココンパス</h1>
             <div class="header-info">
-                <span class="version-badge">Ver.1.8.0</span>
+                <span class="version-badge">Ver.2.6.0</span>
             </div>
         </header>
 
@@ -406,12 +386,12 @@
             <section id="tab-memo" class="tab-content active">
                 <h2>実戦メモ ＆ 基本カウンター</h2>
                 
-                <div class="form-group" id="group-start-games">
-                    <label for="input-start-games">打ち始めゲーム数（手入力）</label>
+                <div class="form-group">
+                    <label for="input-start-games">打ち始めゲーム数</label>
                     <input type="number" id="input-start-games" value="0" placeholder="例: 0">
                 </div>
 
-                <div class="form-group" id="group-current-games">
+                <div class="form-group">
                     <label for="input-current-games">現在のゲーム数</label>
                     <input type="number" id="input-current-games" placeholder="例: 3000">
                     <div class="quick-btn-container">
@@ -422,13 +402,22 @@
                     </div>
                 </div>
 
-                <div class="form-group" id="group-games">
-                    <label for="input-games">自分で打ったゲーム数（自動計算）</label>
+                <div class="form-group">
+                    <label for="input-games">自分で打ったゲーム数</label>
                     <input type="number" id="input-games" value="0" readonly>
                 </div>
 
-                <div class="form-group" id="group-at">
-                    <label>AT初当たり回数</label>
+                <div class="form-group">
+                    <label>ボーナス回数</label>
+                    <div class="counter-control">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('input-bonus', -1)">-</button>
+                        <input type="number" id="input-bonus" class="counter-value" value="0" min="0">
+                        <button type="button" class="counter-btn" onclick="adjustCounter('input-bonus', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>AT回数</label>
                     <div class="counter-control">
                         <button type="button" class="counter-btn" onclick="adjustCounter('input-at', -1)">-</button>
                         <input type="number" id="input-at" class="counter-value" value="0" min="0">
@@ -436,17 +425,20 @@
                     </div>
                 </div>
 
-                <div class="form-group" id="group-screen-history">
-                    <label>ボーナス終了画面 履歴登録（示唆系）</label>
+                <div class="form-group">
+                    <label>ビッグ終了画面 履歴登録</label>
                     <div style="margin-bottom: 8px;">
-                        <label for="input-screen-type" style="font-size:0.75rem; color:#aaa; margin-bottom:2px;">終了画面を選択</label>
+                        <label for="input-screen-type" style="font-size:0.75rem; color:#aaa; margin-bottom:2px;">画面を選択</label>
                         <select id="input-screen-type">
                             <option value="デフォルト">デフォルト</option>
-                            <option value="高設定示唆 弱">高設定示唆 (弱)</option>
-                            <option value="高設定示唆 強">高設定示唆 (強)</option>
-                            <option value="設定2以上濃厚">設定2以上濃厚</option>
-                            <option value="設定4以上濃厚">設定4以上濃厚</option>
-                            <option value="設定6濃厚">設定6濃厚！</option>
+                            <option value="いろは＆フェリシア（設定3・5・6示唆）">いろは＆フェリシア（設定3・5・6示唆）</option>
+                            <option value="いろは＆さな（設定2・4・6示唆）">いろは＆さな（設定2・4・6示唆）</option>
+                            <option value="いろは＆やちよ＆鶴乃（高設定示唆 弱）">いろは＆やちよ＆鶴乃（高設定示唆 弱）</option>
+                            <option value="いろは＆やちよ＆ももこ等（高設定示唆 強）">いろは＆やちよ＆ももこ等（高設定示唆 強）</option>
+                            <option value="水着みかづき荘（設定2以上濃厚）">水着みかづき荘（設定2以上濃厚）</option>
+                            <option value="2ndシーズン キービジュアル（設定4以上濃厚）">2ndシーズン キービジュアル（設定4以上濃厚）</option>
+                            <option value="1stシーズン キービジュアル（設定5以上濃厚）">1stシーズン キービジュアル（設定5以上濃厚）</option>
+                            <option value="小さいキュゥべえ（設定6濃厚）">小さいキュゥべえ（設定6濃厚）</option>
                         </select>
                     </div>
                     <button type="button" id="btn-add-screen-history" class="btn-primary" style="margin-top: 4px;">追加</button>
@@ -454,7 +446,7 @@
 
                 <div class="calc-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <h3 style="margin-bottom: 0;">終了画面 履歴一覧</h3>
+                        <h3 style="margin-bottom: 0;">ビッグ終了画面 履歴一覧</h3>
                         <button type="button" id="btn-clear-screen-history" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 0.75rem; margin-top:0;">全削除</button>
                     </div>
                     <div id="screen-history-list" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
@@ -462,10 +454,34 @@
                     </div>
                 </div>
 
-                <button id="btn-save-memo" class="btn-primary">データを保存</button>
+                <div class="form-group" style="margin-top: 16px;">
+                    <label>AT終了画面 履歴登録</label>
+                    <div style="margin-bottom: 8px;">
+                        <label for="input-at-screen-type" style="font-size:0.75rem; color:#aaa; margin-bottom:2px;">画面を選択</label>
+                        <select id="input-at-screen-type">
+                            <option value="なし（デフォルト）">なし（デフォルト）</option>
+                            <option value="マギウスメンバー（設定3・5・6示唆）">マギウスメンバー（設定3・5・6示唆）</option>
+                            <option value="みかづき荘メンバー（設定2・4・6示唆）">みかづき荘メンバー（設定2・4・6示唆）</option>
+                            <option value="まどか＆いろは（設定6濃厚）">まどか＆いろは（設定6濃厚）</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-add-at-screen-history" class="btn-primary" style="margin-top: 4px;">追加</button>
+                </div>
+
+                <div class="calc-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="margin-bottom: 0;">AT終了画面 履歴一覧</h3>
+                        <button type="button" id="btn-clear-at-screen-history" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 0.75rem; margin-top:0;">全削除</button>
+                    </div>
+                    <div id="at-screen-history-list" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
+                        <p style="color: #777; text-align: center; padding: 8px;">履歴はありません</p>
+                    </div>
+                </div>
+
+                <button id="btn-save-memo" class="btn-primary" style="margin-top: 12px;">データを保存</button>
             </section>
 
-            <!-- カウント要素タブ（弱チェリー・スイカCZ等） -->
+            <!-- カウント要素タブ -->
             <section id="tab-roles" class="tab-content">
                 <h2>小役・モード・ボーナス集計</h2>
 
@@ -514,7 +530,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>エピソードボーナス（黒江チャレンジ以外経由）選択キャラ[span_0](start_span)[span_0](end_span)</label>
+                    <label>エピソードボーナス選択キャラ</label>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
                         <div>
                             <span style="font-size:0.75rem; color:#aaa;">やちよEP</span>
@@ -533,14 +549,14 @@
                             <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-felicia', -1)">-</button><input type="number" id="ep-felicia" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-felicia', 1)">+</button></div>
                         </div>
                         <div style="grid-column: span 2;">
-                            <span style="font-size:0.75rem; color:#aaa;">黒江EP（高設定期待大！）[span_1](start_span)[span_1](end_span)</span>
+                            <span style="font-size:0.75rem; color:#aaa;">黒江EP（高設定期待大！）</span>
                             <div class="counter-control"><button type="button" class="counter-btn" onclick="adjustCounter('ep-kuroe', -1)">-</button><input type="number" id="ep-kuroe" class="counter-value" value="0" min="0"><button type="button" class="counter-btn" onclick="adjustCounter('ep-kuroe', 1)">+</button></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>みたまボーナス ウワサ発展時 AT当選 / 試行[span_2](start_span)[span_2](end_span)</label>
+                    <label>みたまボーナス ウワサ発展時 AT当選 / 試行</label>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <div class="counter-control" style="flex:1;">
                             <button type="button" class="counter-btn" onclick="adjustCounter('mitama-hit', -1)">-</button>
@@ -564,7 +580,11 @@
                 <div class="calc-card">
                     <h3>現在の実戦確率（自動計算）</h3>
                     <div class="stat-row">
-                        <span>AT初当たり確率:</span>
+                        <span>ボーナス確率:</span>
+                        <strong id="calc-bonus-result">---</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>AT確率:</span>
                         <strong id="calc-at-result">---</strong>
                     </div>
                     <div class="stat-row">
@@ -572,8 +592,22 @@
                         <strong id="calc-res-cherry">---</strong>
                     </div>
                     <div class="stat-row">
-                        <span>スイカからのCZ突入率:</span>
+                        <span>スイカCZ突入率:</span>
                         <strong id="calc-res-suikacz">0.0% (0 / 0)</strong>
+                    </div>
+                </div>
+
+                <div class="calc-card">
+                    <h3>ビッグ終了画面 分布集計</h3>
+                    <div id="result-screen-breakdown" style="font-size: 0.85rem; color: #ccc;">
+                        <p style="color: #777;">記録されたビッグ終了画面はありません</p>
+                    </div>
+                </div>
+
+                <div class="calc-card">
+                    <h3>AT終了画面 分布集計</h3>
+                    <div id="result-at-screen-breakdown" style="font-size: 0.85rem; color: #ccc;">
+                        <p style="color: #777;">記録されたAT終了画面はありません</p>
                     </div>
                 </div>
 
@@ -590,6 +624,23 @@
             <section id="tab-analysis" class="tab-content">
                 <h2>解析データ（一撃参考）</h2>
                 
+                <div class="result-card">
+                    <h3>ボーナス・AT確率 ＆ 機械割</h3>
+                    <table class="spec-table analysis-table" data-table-id="bonus-at-table">
+                        <thead>
+                            <tr><th>設定</th><th>ボーナス</th><th>AT</th><th>機械割</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>設定1</td><td data-col="bn" data-val="0.004156">1/240.6</td><td data-col="at" data-val="0.001527">1/654.6</td><td>97.6%</td></tr>
+                            <tr><td>設定2</td><td data-col="bn" data-val="0.004235">1/236.1</td><td data-col="at" data-val="0.001578">1/633.4</td><td>98.9%</td></tr>
+                            <tr><td>設定3</td><td data-col="bn" data-val="0.004488">1/222.8</td><td data-col="at" data-val="0.001747">1/571.8</td><td>102.0%</td></tr>
+                            <tr><td>設定4</td><td data-col="bn" data-val="0.004796">1/208.5</td><td data-col="at" data-val="0.001935">1/516.6</td><td>106.0%</td></tr>
+                            <tr><td>設定5</td><td data-col="bn" data-val="0.005125">1/195.1</td><td data-col="at" data-val="0.002190">1/456.5</td><td>110.4%</td></tr>
+                            <tr><td>設定6</td><td data-col="bn" data-val="0.005426">1/184.3</td><td data-col="at" data-val="0.002399">1/416.7</td><td>114.9%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="result-card">
                     <h3>弱チェリー確率</h3>
                     <table class="spec-table analysis-table" data-table-id="weak-cherry-table">
@@ -619,69 +670,6 @@
                         </tbody>
                     </table>
                 </div>
-
-                <div class="result-card">
-                    <h3>エピソードボーナス選択率（黒江チャ以外）[span_3](start_span)[span_3](end_span)</h3>
-                    <table class="spec-table">
-                        <thead><tr><th>設定</th><th>やちよ</th><th>鶴乃</th><th>さな</th><th>フェリシア</th><th>黒江</th></tr></thead>
-                        <tbody>
-                            <tr><td>1</td><td>28.1%</td><td>28.1%</td><td>21.9%</td><td>21.9%</td><td>0.1%</td></tr>
-                            <tr><td>2</td><td>32.7%</td><td>23.4%</td><td>21.9%</td><td>21.9%</td><td>0.1%</td></tr>
-                            <tr><td>3</td><td>23.4%</td><td>31.3%</td><td>21.9%</td><td>21.9%</td><td>1.6%</td></tr>
-                            <tr><td>4</td><td>28.1%</td><td>15.6%</td><td>31.3%</td><td>23.4%</td><td>1.6%</td></tr>
-                            <tr><td>5</td><td>17.2%</td><td>21.9%</td><td>23.4%</td><td>31.3%</td><td>6.3%</td></tr>
-                            <tr><td>6</td><td>23.4%</td><td>14.1%</td><td>31.3%</td><td>25.0%</td><td>6.3%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="result-card">
-                    <h3>みたまボーナス ウワサ発展時AT当選率[span_4](start_span)[span_4](end_span)</h3>
-                    <table class="spec-table">
-                        <thead><tr><th>設定</th><th>報酬Lv2</th><th>報酬Lv3</th></tr></thead>
-                        <tbody>
-                            <tr><td>1</td><td>0.8%</td><td>5.1%</td></tr>
-                            <tr><td>2</td><td>1.2%</td><td>6.3%</td></tr>
-                            <tr><td>3</td><td>2.3%</td><td>7.8%</td></tr>
-                            <tr><td>4</td><td>4.7%</td><td>9.4%</td></tr>
-                            <tr><td>5</td><td>6.3%</td><td>10.9%</td></tr>
-                            <tr><td>6</td><td>7.8%</td><td>12.5%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="result-card">
-                    <h3>ストーリー5スタートの示唆内容（5スタート）</h3>
-                    <table class="spec-table">
-                        <thead><tr><th>パターン</th><th>示唆内容</th><th>1回目</th><th>2回目</th><th>3回目</th><th>4回目</th><th>5回目</th></tr></thead>
-                        <tbody>
-                            <tr><td>5スタート①</td><td>設定1否定</td><td>5</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
-                            <tr><td>5スタート②</td><td>設定2否定</td><td>5</td><td>2</td><td>1</td><td>3</td><td>4</td></tr>
-                            <tr><td>5スタート③</td><td>設定3否定</td><td>5</td><td>3</td><td>1</td><td>2</td><td>4</td></tr>
-                            <tr><td>5スタート④</td><td>設定2否定</td><td>5</td><td>4</td><td>2</td><td>1</td><td>3</td></tr>
-                            <tr><td>5スタート⑤</td><td>設定1否定＆高設定示唆</td><td>5</td><td>4</td><td>3</td><td>1</td><td>2</td></tr>
-                            <tr><td>5スタート⑥</td><td>設定5・6確定</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td></tr>
-                        </tbody>
-                    </table>
-                    <p style="font-size: 0.75rem; color: #ff69b4; margin-top: 6px;">※5→4→3がアツい！降順に進む⑥のパターンであれば設定5or6が濃厚。</p>
-                </div>
-
-                <div class="result-card">
-                    <h3>AT初当り確率 ＆ 機械割</h3>
-                    <table class="spec-table">
-                        <thead>
-                            <tr><th>設定</th><th>AT初当り</th><th>機械割</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>設定1</td><td>1/550.0</td><td>97.8%</td></tr>
-                            <tr><td>設定2</td><td>1/520.0</td><td>98.9%</td></tr>
-                            <tr><td>設定3</td><td>1/490.0</td><td>101.5%</td></tr>
-                            <tr><td>設定4</td><td>1/440.0</td><td>105.5%</td></tr>
-                            <tr><td>設定5</td><td>1/400.0</td><td>109.5%</td></tr>
-                            <tr><td>設定6</td><td>1/350.0</td><td>114.5%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </section>
 
             <!-- 設定推測タブ -->
@@ -698,7 +686,11 @@
                 <div class="result-card">
                     <h3>設定推測確率（分布）</h3>
                     <div class="inference-filter-container">
-                        <label><input type="checkbox" id="chk-factor-all" checked onchange="updateInferenceDistribution()"> 総合（全要素）</label>
+                        <label><input type="checkbox" id="chk-factor-all" checked onchange="toggleAllFactors(this)"> 総合（全要素）</label>
+                        <label><input type="checkbox" id="chk-factor-bonus" checked onchange="updateInferenceDistribution()"> ボーナス</label>
+                        <label><input type="checkbox" id="chk-factor-at" checked onchange="updateInferenceDistribution()"> AT</label>
+                        <label><input type="checkbox" id="chk-factor-cherry" checked onchange="updateInferenceDistribution()"> 弱チェ</label>
+                        <label><input type="checkbox" id="chk-factor-suika" checked onchange="updateInferenceDistribution()"> スイカCZ</label>
                     </div>
                     <div id="inference-distribution-container" style="margin-top: 10px;">
                     </div>
@@ -734,11 +726,15 @@
             machineName: "マギアレコード",
             specs: {
                 setting: [1, 2, 3, 4, 5, 6],
-                atProb: [550.0, 520.0, 490.0, 440.0, 400.0, 350.0]
+                bonusProb: [240.6, 236.1, 222.8, 208.5, 195.1, 184.3],
+                atProb: [654.6, 633.4, 571.8, 516.6, 456.5, 416.7],
+                weakCherryProb: [60.0, 57.7, 55.5, 53.5, 51.7, 50.0],
+                suikaCzRate: [0.199, 0.223, 0.246, 0.273, 0.301, 0.328]
             }
         };
 
         let screenHistory = [];
+        let atScreenHistory = [];
         let currentInferencePercentages = [0, 0, 0, 0, 0, 0];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -812,12 +808,15 @@
                     const rolesCur = document.getElementById('input-current-games-roles');
                     if (rolesCur) rolesCur.value = curVal;
 
+                    document.getElementById('input-bonus').value = data.bonus ?? 0;
                     document.getElementById('input-at').value = data.at ?? 0;
                     document.getElementById('weak-cherry').value = data.weakCherry ?? 0;
                     document.getElementById('suika-cz-hit').value = data.suikaCzHit ?? 0;
                     document.getElementById('suika-cz-tot').value = data.suikaCzTot ?? 0;
                     if (data.screenHistory) screenHistory = data.screenHistory;
+                    if (data.atScreenHistory) atScreenHistory = data.atScreenHistory;
                     renderScreenHistory();
+                    renderAtScreenHistory();
                     calculateStats();
                 } catch (e) {
                     console.error(e);
@@ -830,11 +829,13 @@
             const data = {
                 startGames: document.getElementById('input-start-games').value,
                 currentGames: curVal,
+                bonus: document.getElementById('input-bonus').value,
                 at: document.getElementById('input-at').value,
                 weakCherry: document.getElementById('weak-cherry').value,
                 suikaCzHit: document.getElementById('suika-cz-hit').value,
                 suikaCzTot: document.getElementById('suika-cz-tot').value,
-                screenHistory: screenHistory
+                screenHistory: screenHistory,
+                atScreenHistory: atScreenHistory
             };
             localStorage.setItem('magireco_memo', JSON.stringify(data));
             updateReportText();
@@ -866,6 +867,32 @@
             calculateStats();
         }
 
+        function renderAtScreenHistory() {
+            const container = document.getElementById('at-screen-history-list');
+            if (!container) return;
+            if (atScreenHistory.length === 0) {
+                container.innerHTML = '<p style="color: #777; text-align: center; padding: 8px;">履歴はありません</p>';
+                return;
+            }
+            let html = '';
+            atScreenHistory.forEach((item, index) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 6px 10px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #2a2a2a;">
+                        <div><span style="color: #00ffff; font-weight: bold; margin-right: 6px;">${index + 1}回目</span><span>${item.screenType}</span></div>
+                        <button type="button" onclick="removeAtScreenHistory(${index})" style="background: #333; color: #ff69b4; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer;">削除</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function removeAtScreenHistory(index) {
+            atScreenHistory.splice(index, 1);
+            renderAtScreenHistory();
+            autoSaveMemo();
+            calculateStats();
+        }
+
         function setupEventListeners() {
             document.getElementById('btn-add-screen-history').addEventListener('click', () => {
                 const screenType = document.getElementById('input-screen-type').value;
@@ -875,10 +902,27 @@
                 calculateStats();
             });
 
+            document.getElementById('btn-add-at-screen-history').addEventListener('click', () => {
+                const screenType = document.getElementById('input-at-screen-type').value;
+                atScreenHistory.push({ screenType, timestamp: Date.now() });
+                renderAtScreenHistory();
+                autoSaveMemo();
+                calculateStats();
+            });
+
             document.getElementById('btn-clear-screen-history').addEventListener('click', () => {
-                if (confirm('終了画面の履歴をすべて削除しますか？')) {
+                if (confirm('ビッグ終了画面の履歴をすべて削除しますか？')) {
                     screenHistory = [];
                     renderScreenHistory();
+                    autoSaveMemo();
+                    calculateStats();
+                }
+            });
+
+            document.getElementById('btn-clear-at-screen-history').addEventListener('click', () => {
+                if (confirm('AT終了画面の履歴をすべて削除しますか？')) {
+                    atScreenHistory = [];
+                    renderAtScreenHistory();
                     autoSaveMemo();
                     calculateStats();
                 }
@@ -912,9 +956,20 @@
             }
 
             document.getElementById('input-start-games').addEventListener('input', updateCalculatedGames);
+            document.getElementById('input-bonus').addEventListener('input', calculateStats);
+            document.getElementById('input-at').addEventListener('input', calculateStats);
             document.getElementById('weak-cherry').addEventListener('input', calculateStats);
             document.getElementById('suika-cz-hit').addEventListener('input', calculateStats);
             document.getElementById('suika-cz-tot').addEventListener('input', calculateStats);
+        }
+
+        function toggleAllFactors(masterCheckbox) {
+            const isChecked = masterCheckbox.checked;
+            document.getElementById('chk-factor-bonus').checked = isChecked;
+            document.getElementById('chk-factor-at').checked = isChecked;
+            document.getElementById('chk-factor-cherry').checked = isChecked;
+            document.getElementById('chk-factor-suika').checked = isChecked;
+            updateInferenceDistribution();
         }
 
         function highlightRatioTable(tableId, hitInputId, totalInputId, dataCols) {
@@ -961,11 +1016,15 @@
 
         function calculateStats() {
             const games = parseInt(document.getElementById('input-games').value) || 0;
+            
+            const bonus = parseInt(document.getElementById('input-bonus').value) || 0;
+            let bonusActual = (games > 0 && bonus > 0) ? (games / bonus).toFixed(1) : 0;
+            document.getElementById('calc-bonus-result').textContent = bonusActual > 0 ? `1 / ${bonusActual}` : '---';
+
             const at = parseInt(document.getElementById('input-at').value) || 0;
             let atActual = (games > 0 && at > 0) ? (games / at).toFixed(1) : 0;
             document.getElementById('calc-at-result').textContent = atActual > 0 ? `1 / ${atActual}` : '---';
 
-            // 弱チェリー計算
             const weakCherry = parseInt(document.getElementById('weak-cherry').value) || 0;
             document.getElementById('weak-cherry-games-display').textContent = `${games}G`;
             let cherryActual = (games > 0 && weakCherry > 0) ? (games / weakCherry).toFixed(1) : 0;
@@ -973,7 +1032,6 @@
             document.getElementById('weak-cherry-rate-display').textContent = cherryStr;
             document.getElementById('calc-res-cherry').textContent = cherryStr;
 
-            // スイカCZ計算
             const suikaHit = parseInt(document.getElementById('suika-cz-hit').value) || 0;
             const suikaTot = parseInt(document.getElementById('suika-cz-tot').value) || 0;
             const suikaRate = suikaTot > 0 ? ((suikaHit / suikaTot) * 100).toFixed(1) : '0.0';
@@ -986,12 +1044,54 @@
             const mitamaRate = mitamaTot > 0 ? ((mitamaHit / mitamaTot) * 100).toFixed(1) : '0.0';
             document.getElementById('calc-res-mitama').textContent = `${mitamaRate}% (${mitamaHit} / ${mitamaTot})`;
 
-            // ハイライト更新
+            highlightRatioTable('bonus-at-table', 'input-bonus', 'input-games', ['bn']);
+            highlightRatioTable('bonus-at-table', 'input-at', 'input-games', ['at']);
             highlightRatioTable('weak-cherry-table', 'weak-cherry', 'input-games', ['wc']);
             highlightRatioTable('suika-cz-table', 'suika-cz-hit', 'suika-cz-tot', ['scz']);
 
+            renderResultScreenBreakdown();
             updateReliability(games);
             updateInferenceDistribution();
+        }
+
+        function renderResultScreenBreakdown() {
+            const container = document.getElementById('result-screen-breakdown');
+            if (container) {
+                const counts = {};
+                const totalBig = screenHistory.length;
+                screenHistory.forEach(item => {
+                    counts[item.screenType] = (counts[item.screenType] || 0) + 1;
+                });
+                if (totalBig === 0) {
+                    container.innerHTML = '<p style="color: #777;">記録されたビッグ終了画面はありません</p>';
+                } else {
+                    let html = '';
+                    for (const [type, count] of Object.entries(counts)) {
+                        const pct = ((count / totalBig) * 100).toFixed(1);
+                        html += `<div class="stat-row"><span>${type}:</span><strong>${count}回 (${pct}%)</strong></div>`;
+                    }
+                    container.innerHTML = html;
+                }
+            }
+
+            const atContainer = document.getElementById('result-at-screen-breakdown');
+            if (atContainer) {
+                const atCounts = {};
+                const totalAt = atScreenHistory.length;
+                atScreenHistory.forEach(item => {
+                    atCounts[item.screenType] = (atCounts[item.screenType] || 0) + 1;
+                });
+                if (totalAt === 0) {
+                    atContainer.innerHTML = '<p style="color: #777;">記録されたAT終了画面はありません</p>';
+                } else {
+                    let html = '';
+                    for (const [type, count] of Object.entries(atCounts)) {
+                        const pct = ((count / totalAt) * 100).toFixed(1);
+                        html += `<div class="stat-row"><span>${type}:</span><strong>${count}回 (${pct}%)</strong></div>`;
+                    }
+                    atContainer.innerHTML = html;
+                }
+            }
         }
 
         function updateReliability(games) {
@@ -1008,21 +1108,92 @@
         function updateInferenceDistribution() {
             const container = document.getElementById('inference-distribution-container');
             if (!container) return;
+            
             const games = parseInt(document.getElementById('input-games').value) || 0;
+            const bonus = parseInt(document.getElementById('input-bonus').value) || 0;
             const at = parseInt(document.getElementById('input-at').value) || 0;
+            const weakCherry = parseInt(document.getElementById('weak-cherry').value) || 0;
+            const suikaHit = parseInt(document.getElementById('suika-cz-hit').value) || 0;
+            const suikaTot = parseInt(document.getElementById('suika-cz-tot').value) || 0;
+            
             const specs = APP_DATA.specs;
 
+            const chkBonus = document.getElementById('chk-factor-bonus').checked;
+            const chkAt = document.getElementById('chk-factor-at').checked;
+            const chkCherry = document.getElementById('chk-factor-cherry').checked;
+            const chkSuika = document.getElementById('chk-factor-suika').checked;
+
+            const hasData = (games > 0 || bonus > 0 || at > 0 || weakCherry > 0 || suikaTot > 0 || screenHistory.length > 0 || atScreenHistory.length > 0);
+            if (!hasData) {
+                currentInferencePercentages = [0, 0, 0, 0, 0, 0];
+                renderInferenceBars();
+                return;
+            }
+
             let l = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
-            if (games > 100 && at > 0) {
-                const userAtProb = games / at;
-                for (let i = 0; i < 6; i++) {
-                    const diff = Math.abs(specs.atProb[i] - userAtProb) / specs.atProb[i];
-                    l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+
+            if (games > 100) {
+                if (chkBonus && bonus > 0) {
+                    const userBonusProb = games / bonus;
+                    for (let i = 0; i < 6; i++) {
+                        const diff = Math.abs(specs.bonusProb[i] - userBonusProb) / specs.bonusProb[i];
+                        l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+                    }
+                }
+                if (chkAt && at > 0) {
+                    const userAtProb = games / at;
+                    for (let i = 0; i < 6; i++) {
+                        const diff = Math.abs(specs.atProb[i] - userAtProb) / specs.atProb[i];
+                        l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+                    }
+                }
+                if (chkCherry && weakCherry > 0) {
+                    const userCherryProb = games / weakCherry;
+                    for (let i = 0; i < 6; i++) {
+                        const diff = Math.abs(specs.weakCherryProb[i] - userCherryProb) / specs.weakCherryProb[i];
+                        l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+                    }
                 }
             }
+
+            if (chkSuika && suikaTot > 0) {
+                const userSuikaRate = suikaHit / suikaTot;
+                for (let i = 0; i < 6; i++) {
+                    const diff = Math.abs(specs.suikaCzRate[i] - userSuikaRate);
+                    l[i] *= Math.max(0.01, Math.exp(-diff * 10));
+                }
+            }
+
+            screenHistory.forEach(item => {
+                if (item.screenType.includes('水着みかづき荘')) {
+                    l[0] = 0;
+                }
+                if (item.screenType.includes('2ndシーズン キービジュアル')) {
+                    l[0] = 0; l[1] = 0; l[2] = 0;
+                }
+                if (item.screenType.includes('1stシーズン キービジュアル')) {
+                    l[0] = 0; l[1] = 0; l[2] = 0; l[3] = 0;
+                }
+                if (item.screenType.includes('小さいキュゥべえ')) {
+                    l[0] = 0; l[1] = 0; l[2] = 0; l[3] = 0; l[4] = 0;
+                }
+            });
+
+            atScreenHistory.forEach(item => {
+                if (item.screenType.includes('まどか＆いろは')) {
+                    l[0] = 0; l[1] = 0; l[2] = 0; l[3] = 0; l[4] = 0;
+                }
+            });
+
             const total = l.reduce((a, b) => a + b, 0);
             currentInferencePercentages = l.map(val => total > 0 ? Math.round((val / total) * 100) : 0);
+            renderInferenceBars();
+        }
 
+        function renderInferenceBars() {
+            const container = document.getElementById('inference-distribution-container');
+            if (!container) return;
+            const specs = APP_DATA.specs;
             let html = '';
             for (let i = 0; i < 6; i++) {
                 const pct = currentInferencePercentages[i];
@@ -1039,12 +1210,14 @@
 
         function generateReportText() {
             const games = document.getElementById('input-games').value || '0';
+            const bonus = document.getElementById('input-bonus').value || '0';
+            const bonusProb = document.getElementById('calc-bonus-result').textContent;
             const at = document.getElementById('input-at').value || '0';
             const atProb = document.getElementById('calc-at-result').textContent;
             const cherryStr = document.getElementById('calc-res-cherry').textContent;
             const suikaCzStr = document.getElementById('calc-res-suikacz').textContent;
             const p = currentInferencePercentages;
-            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nAT初当り：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
+            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nボーナス初当り：${bonus}回 (${bonusProb})\nAT初当り：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
         }
 
         function updateReportText() {
