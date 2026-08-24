@@ -163,6 +163,7 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #2a2a2a;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .form-group label {
             display: block;
@@ -279,6 +280,7 @@
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 12px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .calc-card h3, .result-card h3 {
             font-size: 0.85rem;
@@ -369,6 +371,23 @@
             accent-color: #ff69b4;
             cursor: pointer;
         }
+
+        /* フラッシュ演出用クラス */
+        @keyframes flashEffect {
+            0% {
+                background-color: #ff69b4;
+                border-color: #fff;
+                box-shadow: 0 0 12px #ff69b4;
+            }
+            100% {
+                background-color: inherit;
+                border-color: inherit;
+                box-shadow: none;
+            }
+        }
+        .flash-active {
+            animation: flashEffect 0.4s ease;
+        }
     </style>
 </head>
 <body>
@@ -377,7 +396,7 @@
         <header class="app-header">
             <h1>マギレココンパス</h1>
             <div class="header-info">
-                <span class="version-badge">Ver.2.6.0</span>
+                <span class="version-badge">Ver.2.7.0</span>
             </div>
         </header>
 
@@ -386,12 +405,12 @@
             <section id="tab-memo" class="tab-content active">
                 <h2>実戦メモ ＆ 基本カウンター</h2>
                 
-                <div class="form-group">
+                <div class="form-group" id="group-start-games">
                     <label for="input-start-games">打ち始めゲーム数</label>
                     <input type="number" id="input-start-games" value="0" placeholder="例: 0">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-current-games">
                     <label for="input-current-games">現在のゲーム数</label>
                     <input type="number" id="input-current-games" placeholder="例: 3000">
                     <div class="quick-btn-container">
@@ -407,7 +426,7 @@
                     <input type="number" id="input-games" value="0" readonly>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-bonus">
                     <label>ボーナス回数</label>
                     <div class="counter-control">
                         <button type="button" class="counter-btn" onclick="adjustCounter('input-bonus', -1)">-</button>
@@ -416,7 +435,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-at">
                     <label>AT回数</label>
                     <div class="counter-control">
                         <button type="button" class="counter-btn" onclick="adjustCounter('input-at', -1)">-</button>
@@ -444,7 +463,7 @@
                     <button type="button" id="btn-add-screen-history" class="btn-primary" style="margin-top: 4px;">追加</button>
                 </div>
 
-                <div class="calc-card">
+                <div class="calc-card" id="card-screen-history">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <h3 style="margin-bottom: 0;">ビッグ終了画面 履歴一覧</h3>
                         <button type="button" id="btn-clear-screen-history" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 0.75rem; margin-top:0;">全削除</button>
@@ -468,7 +487,7 @@
                     <button type="button" id="btn-add-at-screen-history" class="btn-primary" style="margin-top: 4px;">追加</button>
                 </div>
 
-                <div class="calc-card">
+                <div class="calc-card" id="card-at-screen-history">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <h3 style="margin-bottom: 0;">AT終了画面 履歴一覧</h3>
                         <button type="button" id="btn-clear-at-screen-history" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 0.75rem; margin-top:0;">全削除</button>
@@ -496,7 +515,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-weak-cherry">
                     <label>弱チェリーカウント（実戦ゲーム数連動）</label>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85rem; color: #aaa;">
                         <span>対象G数: <strong id="weak-cherry-games-display" style="color:#ff69b4;">0G</strong></span>
@@ -509,7 +528,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-suika-cz">
                     <label>スイカからのCZ突入 / 試行回数</label>
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
                         <span style="font-size: 0.8rem; color: #00ffff;" id="suika-cz-rate-display">0.0% (0 / 0)</span>
@@ -745,6 +764,15 @@
             updateReportText();
         });
 
+        // フラッシュ演出用ヘルパー関数
+        function triggerFlash(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.classList.remove('flash-active');
+            void el.offsetWidth; // リフロー強制
+            el.classList.add('flash-active');
+        }
+
         function adjustCounter(elementId, amount) {
             const input = document.getElementById(elementId);
             if (!input) return;
@@ -752,6 +780,13 @@
             currentVal += amount;
             if (currentVal < 0) currentVal = 0;
             input.value = currentVal;
+            
+            // どのフォームグループか特定してフラッシュ
+            if (elementId === 'input-bonus') triggerFlash('group-bonus');
+            else if (elementId === 'input-at') triggerFlash('group-at');
+            else if (elementId === 'weak-cherry') triggerFlash('group-weak-cherry');
+            else if (elementId.startsWith('suika-cz')) triggerFlash('group-suika-cz');
+
             calculateStats();
             autoSaveMemo();
         }
@@ -767,6 +802,7 @@
             inputCur.value = currentVal;
             if (inputRoles) inputRoles.value = currentVal;
             
+            triggerFlash('group-current-games');
             updateCalculatedGames();
         }
 
@@ -900,6 +936,7 @@
                 renderScreenHistory();
                 autoSaveMemo();
                 calculateStats();
+                triggerFlash('card-screen-history');
             });
 
             document.getElementById('btn-add-at-screen-history').addEventListener('click', () => {
@@ -908,6 +945,7 @@
                 renderAtScreenHistory();
                 autoSaveMemo();
                 calculateStats();
+                triggerFlash('card-at-screen-history');
             });
 
             document.getElementById('btn-clear-screen-history').addEventListener('click', () => {
@@ -955,12 +993,30 @@
                 });
             }
 
-            document.getElementById('input-start-games').addEventListener('input', updateCalculatedGames);
-            document.getElementById('input-bonus').addEventListener('input', calculateStats);
-            document.getElementById('input-at').addEventListener('input', calculateStats);
-            document.getElementById('weak-cherry').addEventListener('input', calculateStats);
-            document.getElementById('suika-cz-hit').addEventListener('input', calculateStats);
-            document.getElementById('suika-cz-tot').addEventListener('input', calculateStats);
+            document.getElementById('input-start-games').addEventListener('input', () => {
+                triggerFlash('group-start-games');
+                updateCalculatedGames();
+            });
+            document.getElementById('input-bonus').addEventListener('input', () => {
+                triggerFlash('group-bonus');
+                calculateStats();
+            });
+            document.getElementById('input-at').addEventListener('input', () => {
+                triggerFlash('group-at');
+                calculateStats();
+            });
+            document.getElementById('weak-cherry').addEventListener('input', () => {
+                triggerFlash('group-weak-cherry');
+                calculateStats();
+            });
+            document.getElementById('suika-cz-hit').addEventListener('input', () => {
+                triggerFlash('group-suika-cz');
+                calculateStats();
+            });
+            document.getElementById('suika-cz-tot').addEventListener('input', () => {
+                triggerFlash('group-suika-cz');
+                calculateStats();
+            });
         }
 
         function toggleAllFactors(masterCheckbox) {
@@ -1217,7 +1273,7 @@
             const cherryStr = document.getElementById('calc-res-cherry').textContent;
             const suikaCzStr = document.getElementById('calc-res-suikacz').textContent;
             const p = currentInferencePercentages;
-            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nボーナス初当り：${bonus}回 (${bonusProb})\nAT初当り：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
+            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nボーナス確率：${bonus}回 (${bonusProb})\nAT確率：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
         }
 
         function updateReportText() {
