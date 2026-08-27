@@ -396,12 +396,11 @@
         <header class="app-header">
             <h1>マギレココンパス</h1>
             <div class="header-info">
-                <span class="version-badge">Ver.2.7.0</span>
+                <span class="version-badge">Ver.2.9.1</span>
             </div>
         </header>
 
         <main class="app-main">
-            <!-- 実戦メモタブ -->
             <section id="tab-memo" class="tab-content active">
                 <h2>実戦メモ ＆ 基本カウンター</h2>
                 
@@ -411,7 +410,7 @@
                 </div>
 
                 <div class="form-group" id="group-current-games">
-                    <label for="input-current-games">現在のゲーム数</label>
+                    <label for="input-current-games">現在のゲーム数（総G数）</label>
                     <input type="number" id="input-current-games" placeholder="例: 3000">
                     <div class="quick-btn-container">
                         <button type="button" class="quick-btn" onclick="addCurrentGames(-100)">-100</button>
@@ -422,8 +421,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="input-games">自分で打ったゲーム数</label>
+                    <label for="input-games">自分で打った総ゲーム数（自動計算）</label>
                     <input type="number" id="input-games" value="0" readonly>
+                </div>
+
+                <div class="form-group" id="group-normal-games">
+                    <label for="input-normal-games">通常ゲーム数（ユニメモ値などを直接入力）</label>
+                    <input type="number" id="input-normal-games" value="0" placeholder="例: 2000">
                 </div>
 
                 <div class="form-group" id="group-bonus">
@@ -500,7 +504,6 @@
                 <button id="btn-save-memo" class="btn-primary" style="margin-top: 12px;">データを保存</button>
             </section>
 
-            <!-- カウント要素タブ -->
             <section id="tab-roles" class="tab-content">
                 <h2>小役・モード・ボーナス集計</h2>
 
@@ -516,9 +519,9 @@
                 </div>
 
                 <div class="form-group" id="group-weak-cherry">
-                    <label>弱チェリーカウント（実戦ゲーム数連動）</label>
+                    <label>弱チェリーカウント（総ゲーム数連動）</label>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85rem; color: #aaa;">
-                        <span>対象G数: <strong id="weak-cherry-games-display" style="color:#ff69b4;">0G</strong></span>
+                        <span>対象G数(総G): <strong id="weak-cherry-games-display" style="color:#00ffff;">0G</strong></span>
                         <span>出現率: <strong id="weak-cherry-rate-display" style="color:#00ffff;">---</strong></span>
                     </div>
                     <div class="counter-control">
@@ -592,22 +595,21 @@
                 </div>
             </section>
 
-            <!-- 実戦結果タブ -->
             <section id="tab-results" class="tab-content">
                 <h2>実戦結果 ＆ 分布集計</h2>
                 
                 <div class="calc-card">
                     <h3>現在の実戦確率（自動計算）</h3>
                     <div class="stat-row">
-                        <span>ボーナス確率:</span>
+                        <span>ボーナス確率（通常Gベース）:</span>
                         <strong id="calc-bonus-result">---</strong>
                     </div>
                     <div class="stat-row">
-                        <span>AT確率:</span>
+                        <span>AT確率（通常Gベース）:</span>
                         <strong id="calc-at-result">---</strong>
                     </div>
                     <div class="stat-row">
-                        <span>弱チェリー確率:</span>
+                        <span>弱チェリー確率（総Gベース）:</span>
                         <strong id="calc-res-cherry">---</strong>
                     </div>
                     <div class="stat-row">
@@ -639,7 +641,6 @@
                 </div>
             </section>
 
-            <!-- 解析データタブ -->
             <section id="tab-analysis" class="tab-content">
                 <h2>解析データ（一撃参考）</h2>
                 
@@ -691,7 +692,6 @@
                 </div>
             </section>
 
-            <!-- 設定推測タブ -->
             <section id="tab-inference" class="tab-content">
                 <h2>設定推測</h2>
                 
@@ -716,7 +716,6 @@
                 </div>
             </section>
 
-            <!-- 設定・レポートタブ -->
             <section id="tab-settings" class="tab-content">
                 <h2>実戦レポート ＆ データ管理</h2>
                 
@@ -781,9 +780,9 @@
             if (currentVal < 0) currentVal = 0;
             input.value = currentVal;
             
-            // どのフォームグループか特定してフラッシュ
             if (elementId === 'input-bonus') triggerFlash('group-bonus');
             else if (elementId === 'input-at') triggerFlash('group-at');
+            else if (elementId === 'input-normal-games') triggerFlash('group-normal-games');
             else if (elementId === 'weak-cherry') triggerFlash('group-weak-cherry');
             else if (elementId.startsWith('suika-cz')) triggerFlash('group-suika-cz');
 
@@ -810,9 +809,10 @@
             const startGames = parseInt(document.getElementById('input-start-games').value) || 0;
             const currentGames = parseInt(document.getElementById('input-current-games').value) || 0;
             const selfGamesInput = document.getElementById('input-games');
-            let diff = currentGames - startGames;
-            if (diff < 0) diff = 0;
-            if (selfGamesInput) selfGamesInput.value = diff;
+            
+            let totalGames = currentGames - startGames;
+            if (totalGames < 0) totalGames = 0;
+            if (selfGamesInput) selfGamesInput.value = totalGames;
 
             calculateStats();
             autoSaveMemo();
@@ -844,6 +844,7 @@
                     const rolesCur = document.getElementById('input-current-games-roles');
                     if (rolesCur) rolesCur.value = curVal;
 
+                    document.getElementById('input-normal-games').value = data.normalGames ?? 0;
                     document.getElementById('input-bonus').value = data.bonus ?? 0;
                     document.getElementById('input-at').value = data.at ?? 0;
                     document.getElementById('weak-cherry').value = data.weakCherry ?? 0;
@@ -853,7 +854,7 @@
                     if (data.atScreenHistory) atScreenHistory = data.atScreenHistory;
                     renderScreenHistory();
                     renderAtScreenHistory();
-                    calculateStats();
+                    updateCalculatedGames();
                 } catch (e) {
                     console.error(e);
                 }
@@ -865,6 +866,7 @@
             const data = {
                 startGames: document.getElementById('input-start-games').value,
                 currentGames: curVal,
+                normalGames: document.getElementById('input-normal-games').value,
                 bonus: document.getElementById('input-bonus').value,
                 at: document.getElementById('input-at').value,
                 weakCherry: document.getElementById('weak-cherry').value,
@@ -997,6 +999,11 @@
                 triggerFlash('group-start-games');
                 updateCalculatedGames();
             });
+            document.getElementById('input-normal-games').addEventListener('input', () => {
+                triggerFlash('group-normal-games');
+                calculateStats();
+                autoSaveMemo();
+            });
             document.getElementById('input-bonus').addEventListener('input', () => {
                 triggerFlash('group-bonus');
                 calculateStats();
@@ -1028,12 +1035,12 @@
             updateInferenceDistribution();
         }
 
-        function highlightRatioTable(tableId, hitInputId, totalInputId, dataCols) {
+        function highlightRatioTable(tableId, hitInputId, totalGamesVal, dataCols) {
             const table = document.querySelector(`[data-table-id="${tableId}"]`);
             if (!table) return;
 
             const hit = parseInt(document.getElementById(hitInputId).value) || 0;
-            const total = parseInt(document.getElementById(totalInputId).value) || 0;
+            const total = totalGamesVal;
             const hasData = (total > 0 && hit > 0);
 
             const trs = table.querySelectorAll('tbody tr');
@@ -1071,19 +1078,22 @@
         }
 
         function calculateStats() {
-            const games = parseInt(document.getElementById('input-games').value) || 0;
+            const totalGames = parseInt(document.getElementById('input-games').value) || 0;
+            const normalGames = parseInt(document.getElementById('input-normal-games').value) || 0;
             
+            // ボーナス・AT確率は【通常ゲーム数】ベース
             const bonus = parseInt(document.getElementById('input-bonus').value) || 0;
-            let bonusActual = (games > 0 && bonus > 0) ? (games / bonus).toFixed(1) : 0;
+            let bonusActual = (normalGames > 0 && bonus > 0) ? (normalGames / bonus).toFixed(1) : 0;
             document.getElementById('calc-bonus-result').textContent = bonusActual > 0 ? `1 / ${bonusActual}` : '---';
 
             const at = parseInt(document.getElementById('input-at').value) || 0;
-            let atActual = (games > 0 && at > 0) ? (games / at).toFixed(1) : 0;
+            let atActual = (normalGames > 0 && at > 0) ? (normalGames / at).toFixed(1) : 0;
             document.getElementById('calc-at-result').textContent = atActual > 0 ? `1 / ${atActual}` : '---';
 
+            // 弱チェリー確率は【総ゲーム数】ベース
             const weakCherry = parseInt(document.getElementById('weak-cherry').value) || 0;
-            document.getElementById('weak-cherry-games-display').textContent = `${games}G`;
-            let cherryActual = (games > 0 && weakCherry > 0) ? (games / weakCherry).toFixed(1) : 0;
+            document.getElementById('weak-cherry-games-display').textContent = `${totalGames}G`;
+            let cherryActual = (totalGames > 0 && weakCherry > 0) ? (totalGames / weakCherry).toFixed(1) : 0;
             const cherryStr = cherryActual > 0 ? `1 / ${cherryActual} (${weakCherry}回)` : '---';
             document.getElementById('weak-cherry-rate-display').textContent = cherryStr;
             document.getElementById('calc-res-cherry').textContent = cherryStr;
@@ -1100,14 +1110,14 @@
             const mitamaRate = mitamaTot > 0 ? ((mitamaHit / mitamaTot) * 100).toFixed(1) : '0.0';
             document.getElementById('calc-res-mitama').textContent = `${mitamaRate}% (${mitamaHit} / ${mitamaTot})`;
 
-            highlightRatioTable('bonus-at-table', 'input-bonus', 'input-games', ['bn']);
-            highlightRatioTable('bonus-at-table', 'input-at', 'input-games', ['at']);
-            highlightRatioTable('weak-cherry-table', 'weak-cherry', 'input-games', ['wc']);
-            highlightRatioTable('suika-cz-table', 'suika-cz-hit', 'suika-cz-tot', ['scz']);
+            highlightRatioTable('bonus-at-table', 'input-bonus', normalGames, ['bn']);
+            highlightRatioTable('bonus-at-table', 'input-at', normalGames, ['at']);
+            highlightRatioTable('weak-cherry-table', 'weak-cherry', totalGames, ['wc']);
+            highlightRatioTable('suika-cz-table', 'suika-cz-hit', suikaTot, ['scz']);
 
             renderResultScreenBreakdown();
-            updateReliability(games);
-            updateInferenceDistribution();
+            updateReliability(normalGames);
+            updateInferenceDistribution(normalGames, totalGames);
         }
 
         function renderResultScreenBreakdown() {
@@ -1150,22 +1160,21 @@
             }
         }
 
-        function updateReliability(games) {
+        function updateReliability(normalGames) {
             const starsEl = document.getElementById('reliability-stars');
             const gamesEl = document.getElementById('reliability-games');
             const msgEl = document.getElementById('reliability-message');
             if (!starsEl) return;
-            gamesEl.textContent = `通常ゲーム数：${games}G`;
-            let stars = games < 1000 ? "★☆☆☆☆" : games < 3000 ? "★★☆☆☆" : "★★★☆☆";
+            gamesEl.textContent = `通常ゲーム数：${normalGames}G`;
+            let stars = normalGames < 1000 ? "★☆☆☆☆" : normalGames < 3000 ? "★★☆☆☆" : "★★★☆☆";
             starsEl.textContent = stars;
-            msgEl.textContent = games < 1000 ? "データ不足" : "参考程度";
+            msgEl.textContent = normalGames < 1000 ? "データ不足" : "参考程度";
         }
 
-        function updateInferenceDistribution() {
+        function updateInferenceDistribution(normalGames, totalGames) {
             const container = document.getElementById('inference-distribution-container');
             if (!container) return;
             
-            const games = parseInt(document.getElementById('input-games').value) || 0;
             const bonus = parseInt(document.getElementById('input-bonus').value) || 0;
             const at = parseInt(document.getElementById('input-at').value) || 0;
             const weakCherry = parseInt(document.getElementById('weak-cherry').value) || 0;
@@ -1179,7 +1188,7 @@
             const chkCherry = document.getElementById('chk-factor-cherry').checked;
             const chkSuika = document.getElementById('chk-factor-suika').checked;
 
-            const hasData = (games > 0 || bonus > 0 || at > 0 || weakCherry > 0 || suikaTot > 0 || screenHistory.length > 0 || atScreenHistory.length > 0);
+            const hasData = (normalGames > 0 || totalGames > 0 || bonus > 0 || at > 0 || weakCherry > 0 || suikaTot > 0 || screenHistory.length > 0 || atScreenHistory.length > 0);
             if (!hasData) {
                 currentInferencePercentages = [0, 0, 0, 0, 0, 0];
                 renderInferenceBars();
@@ -1188,27 +1197,30 @@
 
             let l = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 
-            if (games > 100) {
+            // ボナ・ATは通常ゲーム数ベース
+            if (normalGames > 0) {
                 if (chkBonus && bonus > 0) {
-                    const userBonusProb = games / bonus;
+                    const userBonusProb = normalGames / bonus;
                     for (let i = 0; i < 6; i++) {
                         const diff = Math.abs(specs.bonusProb[i] - userBonusProb) / specs.bonusProb[i];
                         l[i] *= Math.max(0.01, Math.exp(-diff * 3));
                     }
                 }
                 if (chkAt && at > 0) {
-                    const userAtProb = games / at;
+                    const userAtProb = normalGames / at;
                     for (let i = 0; i < 6; i++) {
                         const diff = Math.abs(specs.atProb[i] - userAtProb) / specs.atProb[i];
-                        l[i] *= Math.max(0.01, Math.exp(-diff * 3));
+                        l[i] *= Math.max(0.01, Math.exp(-diff * 12));
                     }
                 }
-                if (chkCherry && weakCherry > 0) {
-                    const userCherryProb = games / weakCherry;
-                    for (let i = 0; i < 6; i++) {
-                        const diff = Math.abs(specs.weakCherryProb[i] - userCherryProb) / specs.weakCherryProb[i];
-                        l[i] *= Math.max(0.01, Math.exp(-diff * 3));
-                    }
+            }
+
+            // 弱チェリーは総ゲーム数ベース
+            if (totalGames > 0 && chkCherry && weakCherry > 0) {
+                const userCherryProb = totalGames / weakCherry;
+                for (let i = 0; i < 6; i++) {
+                    const diff = Math.abs(specs.weakCherryProb[i] - userCherryProb) / specs.weakCherryProb[i];
+                    l[i] *= Math.max(0.01, Math.exp(-diff * 3));
                 }
             }
 
@@ -1265,7 +1277,8 @@
         }
 
         function generateReportText() {
-            const games = document.getElementById('input-games').value || '0';
+            const normalGames = document.getElementById('input-normal-games').value || '0';
+            const totalGames = document.getElementById('input-games').value || '0';
             const bonus = document.getElementById('input-bonus').value || '0';
             const bonusProb = document.getElementById('calc-bonus-result').textContent;
             const at = document.getElementById('input-at').value || '0';
@@ -1273,7 +1286,7 @@
             const cherryStr = document.getElementById('calc-res-cherry').textContent;
             const suikaCzStr = document.getElementById('calc-res-suikacz').textContent;
             const p = currentInferencePercentages;
-            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${games}G\nボーナス確率：${bonus}回 (${bonusProb})\nAT確率：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
+            return `🧭 マギレココンパス 実戦レポート\n通常ゲーム数：${normalGames}G (総G：${totalGames}G)\nボーナス確率：${bonus}回 (${bonusProb})\nAT確率：${at}回 (${atProb})\n弱チェリー：${cherryStr}\nスイカCZ突入率：${suikaCzStr}\n設定推測：1:${p[0]}% 2:${p[1]}% 3:${p[2]}% 4:${p[3]}% 5:${p[4]}% 6:${p[5]}%`;
         }
 
         function updateReportText() {
